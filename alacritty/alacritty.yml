@@ -1,0 +1,17 @@
+
+shell:
+  program: /opt/homebrew/bin/fish
+  args:
+    - --login
+
+import:
+ - ~/.config/alacritty/themes/themes/gruvbox_material_medium_dark.yaml
+
+font:
+  normal:
+    family: "CaskaydiaCove Nerd Font"
+    style: Regular
+  size: 14.0
+
+key_bindings:
+  - { key: S,  mods: Control,           action: ToggleViMode }
