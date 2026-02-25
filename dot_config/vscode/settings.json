@@ -1,0 +1,126 @@
+{
+  // ─── Appearance ───────────────────────────────────────────────────────────────
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.productIconTheme": "catppuccin-mocha",
+
+  "editor.fontFamily": "'FantasqueSansM Nerd Font', monospace",
+  "editor.fontSize": 14,
+  "editor.lineHeight": 1.5,
+  "editor.fontLigatures": true,
+
+  "editor.cursorStyle": "line",
+  "editor.cursorBlinking": "smooth",
+
+  "editor.lineNumbers": "relative",
+  "editor.cursorSurroundingLines": 8,
+  "editor.renderWhitespace": "none",
+  "editor.minimap.enabled": false,
+  "editor.scrollbar.vertical": "hidden",
+  "editor.overviewRulerBorder": false,
+  "editor.guides.indentation": true,
+  "editor.guides.bracketPairs": true,
+  "editor.codeLens": true,
+  "breadcrumbs.enabled": true,
+
+  "workbench.startupEditor": "none",
+  "workbench.tips.enabled": false,
+
+  // ─── Editor Behaviour ─────────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.wordWrap": "off",
+  "editor.rulers": [],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // ─── Diagnostics (inline, like tiny-inline-diagnostic) ────────────────────────
+  "editor.inlineSuggest.enabled": true,
+  "editor.lightbulb.enabled": "off",
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.messageMaxChars": 80,
+  "errorLens.delay": 300,
+
+  // ─── Git / GitLens ────────────────────────────────────────────────────────────
+  "gitlens.currentLine.enabled": true,
+  "gitlens.currentLine.format": "${author}, ${agoOrDate} · ${message|50}",
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.statusBar.enabled": false,
+  "gitlens.codeLens.enabled": false,
+
+  // ─── Terminal ─────────────────────────────────────────────────────────────────
+  "terminal.integrated.fontFamily": "'FantasqueSansM Nerd Font'",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.defaultProfile.osx": "fish",
+  "terminal.integrated.profiles.osx": {
+    "fish": {
+      "path": "/opt/homebrew/bin/fish",
+      "args": ["--login"]
+    }
+  },
+
+  // ─── Vim ──────────────────────────────────────────────────────────────────────
+  "vim.enable": true,
+  "vim.leader": "<space>",
+  "vim.hlsearch": true,
+  "vim.useSystemClipboard": true,
+  "vim.useCtrlKeys": true,
+
+  "vim.insertModeKeyBindings": [
+    {
+      "before": ["j", "k"],
+      "after": ["<Esc>"]
+    }
+  ],
+
+  "vim.normalModeKeyBindingsNonRecursive": [
+    { "before": ["<leader>", "e"], "commands": ["workbench.view.explorer"] },
+    { "before": ["<leader>", "f", "f"], "commands": ["workbench.action.quickOpen"] },
+    { "before": ["<leader>", "f", "g"], "commands": ["workbench.action.findInFiles"] },
+    { "before": ["<leader>", "b", "d"], "commands": ["workbench.action.closeActiveEditor"] },
+    { "before": ["g", "d"], "commands": ["editor.action.revealDefinition"] },
+    { "before": ["g", "r"], "commands": ["editor.action.goToReferences"] },
+    { "before": ["g", "I"], "commands": ["editor.action.goToImplementation"] },
+    { "before": ["K"], "commands": ["editor.action.showHover"] },
+    { "before": ["<leader>", "c", "a"], "commands": ["editor.action.quickFix"] },
+    { "before": ["<leader>", "c", "r"], "commands": ["editor.action.rename"] },
+    { "before": ["]", "d"], "commands": ["editor.action.marker.next"] },
+    { "before": ["[", "d"], "commands": ["editor.action.marker.prev"] }
+  ],
+
+  // ─── C# ───────────────────────────────────────────────────────────────────────
+  "dotnet.defaultSolution": "detect",
+
+  // ─── Semantic Token Colors (matches nvim Catppuccin custom_highlights) ────────
+  "editor.semanticHighlighting.enabled": true,
+  "editor.semanticTokenColorCustomizations": {
+    "[Catppuccin Mocha]": {
+      "rules": {
+        "class":                  { "foreground": "#f9e2af" },  // yellow
+        "struct":                 { "foreground": "#94e2d5" },  // teal
+        "enum":                   { "foreground": "#fab387" },  // peach
+        "interface":              { "foreground": "#a6e3a1" },  // green
+        "namespace":              { "foreground": "#cba6f7" },  // mauve
+        "enumMember":             { "foreground": "#b4befe" },  // lavender
+        "field":                  { "foreground": "#74c7ec" },  // sapphire
+        "field.static":           { "foreground": "#74c7ec" },
+        "field.readonly":         { "foreground": "#74c7ec" },
+        "property":               { "foreground": "#74c7ec" },  // sapphire
+        "property.static":        { "foreground": "#74c7ec" },
+        "property.readonly":      { "foreground": "#74c7ec" },
+        "event":                  { "foreground": "#74c7ec" },  // sapphire
+        "variable":               { "foreground": "#eba0ac" },  // maroon
+        "variable.readonly":      { "foreground": "#eba0ac" },
+        "parameter":              { "foreground": "#eba0ac" },  // maroon
+        "parameter.readonly":     { "foreground": "#eba0ac" }
+      }
+    }
+  },
+
+  // ─── Explorer ─────────────────────────────────────────────────────────────────
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "dotnet.inlayHints.enableInlayHintsForParameters": true,
+  "csharp.inlayHints.enableInlayHintsForTypes": false
+}
