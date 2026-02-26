@@ -7,6 +7,15 @@
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
+-- Recompile catppuccin after Lazy updates (prevents stale cache causing missing highlights)
+vim.api.nvim_create_autocmd("User", {
+  pattern = { "LazyUpdate", "LazySync" },
+  callback = function()
+    require("catppuccin").compile()
+    vim.cmd.colorscheme(vim.g.colors_name)
+  end,
+})
+
 -- Fix OmniSharp gd: snacks_picker's LspAttach fires after the dotnet extra's omnisharp_extended
 -- keymap, overriding it. We re-override after a delay so we always fire last.
 vim.api.nvim_create_autocmd("LspAttach", {
