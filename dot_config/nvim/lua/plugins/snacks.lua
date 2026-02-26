@@ -4,7 +4,7 @@ return {
     picker = {
       sources = {
         projects = {
-          dev = { "~/Workspace" },
+          dev = { "~/Workspace/projects", "~/Workspace/study", "~/Workspace/scratch" },
         },
       },
     },
