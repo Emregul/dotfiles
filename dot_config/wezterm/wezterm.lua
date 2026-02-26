@@ -58,6 +58,9 @@ config.keys = {
 
   -- Enter WezTerm copy mode (vi-style, replaces Alacritty vi mode)
   { key = "s", mods = "CTRL", action = act.ActivateCopyMode },
+
+  -- Shift+Enter sends escape sequence for Claude Code multi-line input
+  { key = "Enter", mods = "SHIFT", action = act.SendString("\x1b[13;2u") },
 }
 
 return config
