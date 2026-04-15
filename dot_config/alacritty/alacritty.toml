@@ -72,3 +72,8 @@ regex = "[0-9a-f]{7,40}"
 command = "open"
 binding = { key = "F", mods = "Control|Shift" }
 regex = "~/[A-Za-z0-9._~/-]+|(/[A-Za-z0-9._~-]+)+"
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

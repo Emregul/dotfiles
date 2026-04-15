@@ -57,3 +57,6 @@ function y
     end
     rm -f -- "$tmp"
 end
+
+# Added by get-aspire-cli.sh
+fish_add_path $HOME/.aspire/bin
