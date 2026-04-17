@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# tmux-zoxide-opener: fuzzy pick a zoxide directory and open as tmux session
-dir=$(zoxide query -l | fzf --reverse --header="Open project")
+# tmux-zoxide-opener: fuzzy pick a project and open as tmux session
+# Only shows directories that are git repos (actual project roots)
+dir=$(zoxide query -l | while read -r d; do
+  [ -d "$d/.git" ] && echo "$d"
+done | fzf --reverse --header="Open project")
 [ -z "$dir" ] && exit 0
 name=$(basename "$dir" | tr '.' '-')
 if tmux has-session -t "$name" 2>/dev/null; then
