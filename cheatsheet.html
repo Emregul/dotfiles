@@ -185,6 +185,7 @@
   .cat-edit .card-header { color: var(--yellow); border-left: 3px solid var(--yellow); }
   .cat-ui .card-header { color: var(--sky); border-left: 3px solid var(--sky); }
   .cat-file .card-header { color: var(--teal); border-left: 3px solid var(--teal); }
+  .cat-ai .card-header { color: var(--pink); border-left: 3px solid var(--pink); }
   .cat-diag .card-header { color: var(--red); border-left: 3px solid var(--red); }
 
   /* Rows */
@@ -321,6 +322,7 @@
   <button class="filter-btn" data-cat="git">🔶 Git</button>
   <button class="filter-btn" data-cat="edit">✏️ Edit</button>
   <button class="filter-btn" data-cat="file">📁 Files</button>
+  <button class="filter-btn" data-cat="ai">🤖 AI</button>
   <button class="filter-btn" data-cat="ui">🎛 UI</button>
 </div>
 
@@ -556,6 +558,33 @@
     <div class="row"><div class="key-col"><kbd>&gt;</kbd><kbd>p</kbd> <kbd>&lt;</kbd><kbd>p</kbd></div><div class="desc-col">Paste and indent right / left</div></div>
   </div>
   <div class="tip">Paste wrong thing? Press [y to cycle to previous yank</div>
+</div>
+
+<!-- ═══════════════════ AI / Sidekick ═══════════════════ -->
+<div class="card cat-ai" data-category="ai">
+  <div class="card-header"><span class="card-icon">🤖</span> Sidekick — Next Edit Suggestions</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd>Tab</kbd></div><div class="desc-col"><strong>Jump to / apply</strong> next edit suggestion</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>?</kbd></div><div class="desc-col">Show all keymaps (which-key) — search "sidekick"</div></div>
+  </div>
+  <div class="tip">NES suggests multi-line refactors anywhere in your file — not just at cursor</div>
+</div>
+
+<div class="card cat-ai" data-category="ai">
+  <div class="card-header"><span class="card-icon">💬</span> Sidekick — AI CLI Terminal</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>a</kbd></div><div class="desc-col"><strong>Toggle CLI terminal</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>c</kbd></div><div class="desc-col"><strong>Toggle Agency Copilot</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>s</kbd></div><div class="desc-col">Select from all CLI tools</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>.</kbd></div><div class="desc-col">Focus sidekick terminal (any mode)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>d</kbd></div><div class="desc-col">Detach / close CLI session</div></div>
+    <div class="separator"><span>Send Context</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>t</kbd></div><div class="desc-col"><strong>Send current function / context</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>f</kbd></div><div class="desc-col">Send current file</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>v</kbd></div><div class="desc-col">Send visual selection</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>a</kbd><kbd>p</kbd></div><div class="desc-col">Pick from prompt library</div></div>
+  </div>
+  <div class="tip">Sessions persist in tmux — detach and reattach without losing context</div>
 </div>
 
 <!-- ═══════════════════ UI ═══════════════════ -->

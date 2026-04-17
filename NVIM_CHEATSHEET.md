@@ -473,6 +473,41 @@ Yanky gives you a yank ring — paste history like a clipboard manager.
 
 ## Footnotes
 
+---
+
+## 18. Sidekick — AI Assistant
+
+### Next Edit Suggestions (NES)
+
+| Key | Action |
+|-----|--------|
+| `Tab` | **Jump to / apply** next edit suggestion |
+
+> NES suggests multi-line refactors anywhere in your file — not just at the cursor.
+
+### AI CLI Terminal
+
+| Key | Action |
+|-----|--------|
+| `SPC a a` | **Toggle CLI terminal** |
+| `SPC a c` | **Toggle Agency Copilot** directly |
+| `SPC a s` | Select from all CLI tools |
+| `Ctrl+.` | Focus sidekick terminal (any mode) |
+| `SPC a d` | Detach / close CLI session |
+
+### Send Context to AI
+
+| Key | Action |
+|-----|--------|
+| `SPC a t` | **Send current function / context** |
+| `SPC a f` | Send current file |
+| `SPC a v` | Send visual selection |
+| `SPC a p` | Pick from prompt library (explain, fix, test, review…) |
+
+> Sessions persist in tmux — detach and reattach without losing context.
+
+---
+
 [^1]: LazyVim keymaps source: [`lua/lazyvim/config/keymaps.lua`](https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua)
 [^2]: LSP keymaps: [`lua/lazyvim/plugins/lsp/init.lua`](https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/lsp/init.lua) — `servers["*"].keys`
 [^3]: Snacks picker keymaps: [`lua/lazyvim/plugins/extras/editor/snacks_picker.lua`](https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/editor/snacks_picker.lua)
