@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# tmux-session-switcher: fuzzy pick a tmux session and switch to it
+session=$(tmux list-sessions -F '#{session_name}' | fzf --reverse --header="Switch session")
+[ -z "$session" ] && exit 0
+tmux switch-client -t "$session"
