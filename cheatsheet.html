@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neovim Cheatsheet — LazyVim</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    /* Catppuccin Mocha */
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
+    --surface0: #313244;
+    --surface1: #45475a;
+    --surface2: #585b70;
+    --overlay0: #6c7086;
+    --overlay1: #7f849c;
+    --text: #cdd6f4;
+    --subtext0: #a6adc8;
+    --subtext1: #bac2de;
+    --lavender: #b4befe;
+    --blue: #89b4fa;
+    --sapphire: #74c7ec;
+    --sky: #89dceb;
+    --teal: #94e2d5;
+    --green: #a6e3a1;
+    --yellow: #f9e2af;
+    --peach: #fab387;
+    --maroon: #eba0ac;
+    --red: #f38ba8;
+    --mauve: #cba6f7;
+    --pink: #f5c2e7;
+    --flamingo: #f2cdcd;
+    --rosewater: #f5e0dc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--base);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--surface0);
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--blue), var(--mauve));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+
+  .header p {
+    color: var(--overlay1);
+    font-size: 0.9rem;
+  }
+
+  .leader-badge {
+    display: inline-block;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--yellow);
+    margin: 0 0.15rem;
+  }
+
+  /* Search & filter */
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+    padding: 0.6rem 1rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-box:focus {
+    border-color: var(--blue);
+  }
+
+  .search-box::placeholder {
+    color: var(--overlay0);
+  }
+
+  .filter-btn {
+    padding: 0.45rem 0.9rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 6px;
+    color: var(--subtext0);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover {
+    background: var(--surface1);
+    color: var(--text);
+  }
+
+  .filter-btn.active {
+    background: var(--blue);
+    color: var(--crust);
+    border-color: var(--blue);
+    font-weight: 600;
+  }
+
+  /* Grid layout */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .card:hover {
+    border-color: var(--surface1);
+    transform: translateY(-1px);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--surface0);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .card-icon {
+    font-size: 1.1rem;
+    width: 1.5rem;
+    text-align: center;
+  }
+
+  .card-body {
+    padding: 0;
+  }
+
+  /* Category colors */
+  .cat-find .card-header { color: var(--blue); border-left: 3px solid var(--blue); }
+  .cat-nav .card-header { color: var(--mauve); border-left: 3px solid var(--mauve); }
+  .cat-code .card-header { color: var(--green); border-left: 3px solid var(--green); }
+  .cat-git .card-header { color: var(--peach); border-left: 3px solid var(--peach); }
+  .cat-edit .card-header { color: var(--yellow); border-left: 3px solid var(--yellow); }
+  .cat-ui .card-header { color: var(--sky); border-left: 3px solid var(--sky); }
+  .cat-file .card-header { color: var(--teal); border-left: 3px solid var(--teal); }
+  .cat-diag .card-header { color: var(--red); border-left: 3px solid var(--red); }
+
+  /* Rows */
+  .row {
+    display: flex;
+    align-items: baseline;
+    padding: 0.4rem 1rem;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--surface0);
+    transition: background 0.15s;
+  }
+
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: rgba(137, 180, 250, 0.04); }
+
+  .row.highlight { background: rgba(249, 226, 175, 0.08); }
+
+  .key-col {
+    flex: 0 0 auto;
+    min-width: 140px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    align-items: center;
+  }
+
+  .desc-col {
+    flex: 1;
+    color: var(--subtext1);
+    font-size: 0.85rem;
+  }
+
+  /* Key styling */
+  kbd {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.15rem 0.45rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 4px;
+    color: var(--lavender);
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  kbd.leader {
+    color: var(--yellow);
+    border-color: rgba(249, 226, 175, 0.3);
+    background: rgba(249, 226, 175, 0.08);
+  }
+
+  kbd.special {
+    color: var(--peach);
+    border-color: rgba(250, 179, 135, 0.3);
+    background: rgba(250, 179, 135, 0.06);
+  }
+
+  .key-plus {
+    color: var(--overlay0);
+    font-size: 0.7rem;
+    margin: 0 0.1rem;
+  }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 1rem;
+    border-bottom: 1px solid var(--surface0);
+  }
+
+  .separator span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--overlay0);
+  }
+
+  .tip {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    color: var(--overlay1);
+    font-style: italic;
+    border-top: 1px solid var(--surface0);
+    background: rgba(148, 226, 213, 0.03);
+  }
+
+  .tip::before {
+    content: '💡 ';
+  }
+
+  .hidden { display: none !important; }
+
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--overlay0);
+    font-size: 1rem;
+  }
+
+  @media print {
+    body { padding: 0.5rem; font-size: 11px; }
+    .controls { display: none; }
+    .grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .card { break-inside: avoid; border: 1px solid #444; }
+    .row { padding: 0.2rem 0.5rem; }
+    kbd { font-size: 0.65rem; padding: 0.1rem 0.3rem; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .key-col { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⌨ Neovim Cheatsheet</h1>
+  <p>LazyVim · Catppuccin Mocha · <span class="leader-badge">Space</span> = leader · <span class="leader-badge">jk</span> = escape</p>
+</div>
+
+<div class="controls">
+  <input type="text" class="search-box" placeholder="Search keybindings…  (try: grep, rename, hunk, split)" id="search">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="find">🔍 Find</button>
+  <button class="filter-btn" data-cat="nav">🧭 Navigate</button>
+  <button class="filter-btn" data-cat="code">⚡ Code</button>
+  <button class="filter-btn" data-cat="diag">🔴 Diagnostics</button>
+  <button class="filter-btn" data-cat="git">🔶 Git</button>
+  <button class="filter-btn" data-cat="edit">✏️ Edit</button>
+  <button class="filter-btn" data-cat="file">📁 Files</button>
+  <button class="filter-btn" data-cat="ui">🎛 UI</button>
+</div>
+
+<div class="grid" id="grid">
+
+<!-- ═══════════════════ FINDING FILES ═══════════════════ -->
+<div class="card cat-find" data-category="find">
+  <div class="card-header"><span class="card-icon">🔍</span> Quick Access</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd class="leader">SPC</kbd></div><div class="desc-col"><strong>Find files</strong> (project root)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>/</kbd></div><div class="desc-col"><strong>Live grep</strong> — search file contents</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>,</kbd></div><div class="desc-col"><strong>Open buffers</strong> — switch between files</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>:</kbd></div><div class="desc-col">Command history</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>r</kbd></div><div class="desc-col">Recent files</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>p</kbd></div><div class="desc-col"><strong>Projects</strong> — switch workspace</div></div>
+  </div>
+  <div class="tip">In any picker, Alt+c toggles between project root and cwd</div>
+</div>
+
+<div class="card cat-find" data-category="find">
+  <div class="card-header"><span class="card-icon">📂</span> Find & Grep</div>
+  <div class="card-body">
+    <div class="separator"><span>Find Files</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>f</kbd></div><div class="desc-col">Find files (root)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>F</kbd></div><div class="desc-col">Find files (cwd)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>g</kbd></div><div class="desc-col">Find files (git-tracked)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>c</kbd></div><div class="desc-col">Find config files</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>n</kbd></div><div class="desc-col">New file</div></div>
+    <div class="separator"><span>Grep</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>g</kbd></div><div class="desc-col">Grep (root)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>G</kbd></div><div class="desc-col">Grep (cwd)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>b</kbd></div><div class="desc-col">Search lines in buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>B</kbd></div><div class="desc-col">Grep open buffers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>w</kbd></div><div class="desc-col">Grep word under cursor</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>r</kbd></div><div class="desc-col"><strong>Search & replace</strong> (grug-far)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>R</kbd></div><div class="desc-col">Resume last picker</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CODE NAVIGATION ═══════════════════ -->
+<div class="card cat-nav" data-category="nav">
+  <div class="card-header"><span class="card-icon">🧭</span> LSP Navigation</div>
+  <div class="card-body">
+    <div class="separator"><span>Go To</span></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>d</kbd></div><div class="desc-col"><strong>Go to definition</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>r</kbd></div><div class="desc-col"><strong>Find all references</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>I</kbd></div><div class="desc-col">Go to implementation</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>y</kbd></div><div class="desc-col">Go to type definition</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>D</kbd></div><div class="desc-col">Go to declaration</div></div>
+    <div class="row"><div class="key-col"><kbd>K</kbd></div><div class="desc-col"><strong>Hover</strong> — docs & type info</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>K</kbd></div><div class="desc-col">Signature help</div></div>
+    <div class="separator"><span>Call Hierarchy</span></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>a</kbd><kbd>i</kbd></div><div class="desc-col">Incoming calls — what calls this?</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>a</kbd><kbd>o</kbd></div><div class="desc-col">Outgoing calls — what does this call?</div></div>
+    <div class="separator"><span>References</span></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>]</kbd></div><div class="desc-col">Next reference of word</div></div>
+    <div class="row"><div class="key-col"><kbd>[</kbd><kbd>[</kbd></div><div class="desc-col">Previous reference of word</div></div>
+  </div>
+</div>
+
+<div class="card cat-nav" data-category="nav">
+  <div class="card-header"><span class="card-icon">⚡</span> Flash — Jump Anywhere</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="special">s</kbd></div><div class="desc-col"><strong>Flash jump</strong> — type chars, press label to jump</div></div>
+    <div class="row"><div class="key-col"><kbd class="special">S</kbd></div><div class="desc-col">Flash treesitter — select syntax nodes</div></div>
+    <div class="row"><div class="key-col"><kbd class="special">Ctrl</kbd><span class="key-plus">+</span><kbd class="special">Space</kbd></div><div class="desc-col"><strong>Incremental selection</strong> — expand by node</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>s</kbd></div><div class="desc-col">Toggle flash in <kbd>/</kbd> search</div></div>
+  </div>
+  <div class="tip">Press s → type 1-2 chars → colored labels appear → press label letter</div>
+</div>
+
+<div class="card cat-nav" data-category="nav">
+  <div class="card-header"><span class="card-icon">🎯</span> Symbols & Search</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>s</kbd></div><div class="desc-col"><strong>LSP symbols</strong> in current file</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>S</kbd></div><div class="desc-col"><strong>Workspace symbols</strong> — entire project</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>s</kbd></div><div class="desc-col">Symbols sidebar (Trouble)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>S</kbd></div><div class="desc-col">LSP refs/defs panel (Trouble)</div></div>
+    <div class="separator"><span>Search Anything</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>k</kbd></div><div class="desc-col">Search keymaps</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>h</kbd></div><div class="desc-col">Search help pages</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>m</kbd></div><div class="desc-col">Search marks</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>j</kbd></div><div class="desc-col">Search jumps</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>"</kbd></div><div class="desc-col">Search registers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>s</kbd><kbd>u</kbd></div><div class="desc-col">Undo tree</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CODE ACTIONS ═══════════════════ -->
+<div class="card cat-code" data-category="code">
+  <div class="card-header"><span class="card-icon">⚡</span> Code Actions & Refactoring</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>a</kbd></div><div class="desc-col"><strong>Code action</strong> — fix, refactor, extract</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>r</kbd></div><div class="desc-col"><strong>Rename symbol</strong> (live preview)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>R</kbd></div><div class="desc-col">Rename file (updates imports)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>f</kbd></div><div class="desc-col">Format file/selection</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>o</kbd></div><div class="desc-col">Organize imports</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>A</kbd></div><div class="desc-col">Source action</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>m</kbd></div><div class="desc-col">Mason — manage LSP servers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>l</kbd></div><div class="desc-col">LSP info</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DIAGNOSTICS ═══════════════════ -->
+<div class="card cat-diag" data-category="diag">
+  <div class="card-header"><span class="card-icon">🔴</span> Diagnostics & Errors</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>c</kbd><kbd>d</kbd></div><div class="desc-col">Line diagnostics (float)</div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>d</kbd> <kbd>[</kbd><kbd>d</kbd></div><div class="desc-col">Next / prev diagnostic</div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>e</kbd> <kbd>[</kbd><kbd>e</kbd></div><div class="desc-col">Next / prev <strong>error</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>w</kbd> <kbd>[</kbd><kbd>w</kbd></div><div class="desc-col">Next / prev warning</div></div>
+    <div class="separator"><span>Trouble Panels</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>x</kbd><kbd>x</kbd></div><div class="desc-col"><strong>All diagnostics</strong> (Trouble)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>x</kbd><kbd>X</kbd></div><div class="desc-col">Buffer diagnostics (Trouble)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>x</kbd><kbd>t</kbd></div><div class="desc-col">Todo comments list</div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>t</kbd> <kbd>[</kbd><kbd>t</kbd></div><div class="desc-col">Next / prev TODO comment</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>x</kbd><kbd>l</kbd></div><div class="desc-col">Location list</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>x</kbd><kbd>q</kbd></div><div class="desc-col">Quickfix list</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ GIT ═══════════════════ -->
+<div class="card cat-git" data-category="git">
+  <div class="card-header"><span class="card-icon">🔶</span> Git</div>
+  <div class="card-body">
+    <div class="separator"><span>Lazygit & Pickers</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>g</kbd></div><div class="desc-col"><strong>Open lazygit</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>s</kbd></div><div class="desc-col">Git status</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>d</kbd></div><div class="desc-col">Git diff (hunks)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>l</kbd></div><div class="desc-col">Git log</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>f</kbd></div><div class="desc-col">Current file history</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>b</kbd></div><div class="desc-col">Blame line</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>B</kbd></div><div class="desc-col">Open in GitHub</div></div>
+    <div class="separator"><span>Gitsigns — Hunks</span></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>h</kbd> <kbd>[</kbd><kbd>h</kbd></div><div class="desc-col">Next / prev hunk</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>s</kbd></div><div class="desc-col"><strong>Stage hunk</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>r</kbd></div><div class="desc-col">Reset hunk</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>S</kbd></div><div class="desc-col">Stage buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>u</kbd></div><div class="desc-col">Undo stage hunk</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>p</kbd></div><div class="desc-col">Preview hunk inline</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>g</kbd><kbd>h</kbd><kbd>d</kbd></div><div class="desc-col">Diff this file</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BUFFERS ═══════════════════ -->
+<div class="card cat-file" data-category="file">
+  <div class="card-header"><span class="card-icon">📑</span> Buffers</div>
+  <div class="card-body">
+    <div class="separator"><span>Switching</span></div>
+    <div class="row"><div class="key-col"><kbd class="special">Shift</kbd><span class="key-plus">+</span><kbd>h</kbd></div><div class="desc-col">Previous buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="special">Shift</kbd><span class="key-plus">+</span><kbd>l</kbd></div><div class="desc-col">Next buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>b</kbd></div><div class="desc-col">Toggle last buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>j</kbd></div><div class="desc-col"><strong>Pick buffer</strong> — labeled jump</div></div>
+    <div class="separator"><span>Managing</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>d</kbd></div><div class="desc-col">Close buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>o</kbd></div><div class="desc-col">Close other buffers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>p</kbd></div><div class="desc-col">Pin buffer</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>b</kbd><kbd>P</kbd></div><div class="desc-col">Close non-pinned</div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>B</kbd> <kbd>[</kbd><kbd>B</kbd></div><div class="desc-col">Move buffer right / left</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HARPOON ═══════════════════ -->
+<div class="card cat-file" data-category="file">
+  <div class="card-header"><span class="card-icon">🎯</span> Harpoon — Pinned Files</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd class="special">H</kbd></div><div class="desc-col"><strong>Add file</strong> to harpoon list</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>h</kbd></div><div class="desc-col">Open harpoon menu</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>1</kbd>…<kbd>9</kbd></div><div class="desc-col">Jump to harpooned file by number</div></div>
+  </div>
+  <div class="tip">Pin your 3-5 key files, then SPC+1/2/3 to bounce between them instantly</div>
+</div>
+
+<!-- ═══════════════════ FILES ═══════════════════ -->
+<div class="card cat-file" data-category="file">
+  <div class="card-header"><span class="card-icon">📁</span> File Explorers</div>
+  <div class="card-body">
+    <div class="separator"><span>Neo-tree (sidebar)</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>e</kbd></div><div class="desc-col">Toggle explorer (root)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>E</kbd></div><div class="desc-col">Toggle explorer (cwd)</div></div>
+    <div class="separator"><span>Mini-files (floating)</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>m</kbd></div><div class="desc-col">Open at current file</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>f</kbd><kbd>M</kbd></div><div class="desc-col">Open at cwd</div></div>
+  </div>
+  <div class="tip">Mini-files: edit filenames to rename, new line = create, delete line = delete, :w to confirm</div>
+</div>
+
+<!-- ═══════════════════ WINDOWS ═══════════════════ -->
+<div class="card cat-ui" data-category="ui">
+  <div class="card-header"><span class="card-icon">🪟</span> Windows, Splits & Tabs</div>
+  <div class="card-body">
+    <div class="separator"><span>Create & Close</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>|</kbd></div><div class="desc-col">Split right (vertical)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>-</kbd></div><div class="desc-col">Split below (horizontal)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>w</kbd><kbd>d</kbd></div><div class="desc-col">Close window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>w</kbd><kbd>m</kbd></div><div class="desc-col"><strong>Zoom</strong> — toggle maximize</div></div>
+    <div class="separator"><span>Navigate (across nvim ↔ tmux)</span></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>h</kbd><kbd>j</kbd><kbd>k</kbd><kbd>l</kbd></div><div class="desc-col">Move between splits/panes</div></div>
+    <div class="separator"><span>Resize (across nvim ↔ tmux)</span></div>
+    <div class="row"><div class="key-col"><kbd>Alt</kbd><span class="key-plus">+</span><kbd>h</kbd><kbd>j</kbd><kbd>k</kbd><kbd>l</kbd></div><div class="desc-col">Resize split/pane</div></div>
+    <div class="separator"><span>Tabs</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>Tab</kbd><kbd>Tab</kbd></div><div class="desc-col">New tab</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>Tab</kbd><kbd>d</kbd></div><div class="desc-col">Close tab</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>Tab</kbd><kbd>]</kbd><kbd>[</kbd></div><div class="desc-col">Next / prev tab</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ EDITING ═══════════════════ -->
+<div class="card cat-edit" data-category="edit">
+  <div class="card-header"><span class="card-icon">✏️</span> Editing</div>
+  <div class="card-body">
+    <div class="separator"><span>Move & Indent</span></div>
+    <div class="row"><div class="key-col"><kbd>Alt</kbd><span class="key-plus">+</span><kbd>j</kbd> / <kbd>k</kbd></div><div class="desc-col">Move line down / up</div></div>
+    <div class="row"><div class="key-col"><kbd>&gt;</kbd> / <kbd>&lt;</kbd> <small>(visual)</small></div><div class="desc-col">Indent / outdent (stays in visual)</div></div>
+    <div class="separator"><span>Comments</span></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>c</kbd><kbd>c</kbd></div><div class="desc-col">Toggle comment on line</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>c</kbd> <small>(visual)</small></div><div class="desc-col">Toggle comment on selection</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>c</kbd><kbd>o</kbd> / <kbd>O</kbd></div><div class="desc-col">Add comment below / above</div></div>
+    <div class="separator"><span>Surround</span></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>s</kbd><kbd>a</kbd></div><div class="desc-col"><strong>Add</strong> surround (e.g., gsaiw")</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>s</kbd><kbd>d</kbd></div><div class="desc-col"><strong>Delete</strong> surround</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd><kbd>s</kbd><kbd>r</kbd></div><div class="desc-col"><strong>Replace</strong> surround</div></div>
+  </div>
+</div>
+
+<div class="card cat-edit" data-category="edit">
+  <div class="card-header"><span class="card-icon">📋</span> Yanky — Paste History</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>p</kbd></div><div class="desc-col"><strong>Yank history</strong> — fuzzy search all yanks</div></div>
+    <div class="row"><div class="key-col"><kbd>p</kbd> / <kbd>P</kbd></div><div class="desc-col">Paste after / before</div></div>
+    <div class="row"><div class="key-col"><kbd>[</kbd><kbd>y</kbd> <kbd>]</kbd><kbd>y</kbd></div><div class="desc-col"><strong>Cycle yank history</strong> after pasting</div></div>
+    <div class="row"><div class="key-col"><kbd>]</kbd><kbd>p</kbd> <kbd>[</kbd><kbd>p</kbd></div><div class="desc-col">Paste with auto-indent</div></div>
+    <div class="row"><div class="key-col"><kbd>&gt;</kbd><kbd>p</kbd> <kbd>&lt;</kbd><kbd>p</kbd></div><div class="desc-col">Paste and indent right / left</div></div>
+  </div>
+  <div class="tip">Paste wrong thing? Press [y to cycle to previous yank</div>
+</div>
+
+<!-- ═══════════════════ UI ═══════════════════ -->
+<div class="card cat-ui" data-category="ui">
+  <div class="card-header"><span class="card-icon">🎛</span> Toggles & UI</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>f</kbd></div><div class="desc-col">Toggle auto-format on save</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>h</kbd></div><div class="desc-col">Toggle inlay hints</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>d</kbd></div><div class="desc-col">Toggle diagnostics</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>w</kbd></div><div class="desc-col">Toggle word wrap</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>l</kbd></div><div class="desc-col">Toggle line numbers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>L</kbd></div><div class="desc-col">Toggle relative numbers</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>z</kbd></div><div class="desc-col"><strong>Zen mode</strong></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>D</kbd></div><div class="desc-col">Dim inactive code</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>u</kbd><kbd>g</kbd></div><div class="desc-col">Toggle indent guides</div></div>
+    <div class="separator"><span>Misc</span></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>s</kbd></div><div class="desc-col">Save file</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>/</kbd></div><div class="desc-col">Toggle floating terminal</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>?</kbd></div><div class="desc-col">Show all keymaps (which-key)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>l</kbd></div><div class="desc-col">Lazy plugin manager</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">SPC</kbd><kbd>q</kbd><kbd>q</kbd></div><div class="desc-col">Quit all</div></div>
+  </div>
+</div>
+
+</div><!-- /grid -->
+
+<div class="no-results hidden" id="no-results">No keybindings match your search.</div>
+
+<script>
+const searchInput = document.getElementById('search');
+const grid = document.getElementById('grid');
+const cards = grid.querySelectorAll('.card');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const noResults = document.getElementById('no-results');
+
+let activeCategory = 'all';
+
+function applyFilters() {
+  const query = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+
+  cards.forEach(card => {
+    const catMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
+    
+    if (!catMatch) {
+      card.classList.add('hidden');
+      return;
+    }
+
+    if (!query) {
+      card.classList.remove('hidden');
+      visible++;
+      card.querySelectorAll('.row').forEach(r => r.classList.remove('highlight'));
+      return;
+    }
+
+    const rows = card.querySelectorAll('.row');
+    let cardHasMatch = false;
+
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      if (text.includes(query)) {
+        row.classList.add('highlight');
+        cardHasMatch = true;
+      } else {
+        row.classList.remove('highlight');
+      }
+    });
+
+    // Also check card header
+    const headerText = card.querySelector('.card-header').textContent.toLowerCase();
+    if (headerText.includes(query)) cardHasMatch = true;
+
+    if (cardHasMatch) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  noResults.classList.toggle('hidden', visible > 0);
+}
+
+searchInput.addEventListener('input', applyFilters);
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = btn.dataset.cat;
+    applyFilters();
+  });
+});
+
+// Keyboard shortcut: / to focus search
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    searchInput.blur();
+    applyFilters();
+  }
+});
+</script>
+
+</body>
+</html>
