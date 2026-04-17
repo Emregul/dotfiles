@@ -27,6 +27,19 @@
 [rerere]
     enabled = true
 
+[fetch]
+    prune = true
+    prunetags = true
+
+[branch]
+    sort = -committerdate
+
+[column]
+    ui = auto
+
+[tag]
+    sort = version:refname
+
 [alias]
     s = status
     co = checkout
@@ -35,6 +48,8 @@
     undo = reset --soft HEAD~1
     amend = commit --amend --no-edit
     wip = !git add -A && git commit -m 'wip'
+    please = push --force-with-lease
+    fixup = "!f() { git commit --fixup=$1; }; f"
 
 [credential "https://github.com"]
     helper = !/opt/homebrew/bin/gh auth git-credential

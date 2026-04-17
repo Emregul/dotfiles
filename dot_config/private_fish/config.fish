@@ -15,6 +15,9 @@ if status is-interactive
     # Ctrl+R for history search; up-arrow left to fzf.fish
     atuin init fish --disable-up-arrow | source
 
+    # ── Navi (interactive cheatsheets, Ctrl+G) ─────────────────────────────────
+    navi widget fish | source
+
     # ── Zoxide (smart cd) ─────────────────────────────────────────────────────
     zoxide init fish | source
 
@@ -40,6 +43,14 @@ if status is-interactive
     # Docker
     abbr -a dk  'docker'
     abbr -a dkc 'docker compose'
+    abbr -a dkps 'docker ps'
+    abbr -a dkl  'docker logs -f'
+
+    # Chezmoi
+    abbr -a cz  'chezmoi'
+    abbr -a cza 'chezmoi apply'
+    abbr -a czd 'chezmoi diff'
+    abbr -a cze 'chezmoi edit'
 
     # Quick edits
     abbr -a fishrc  '$EDITOR ~/.config/fish/config.fish'
