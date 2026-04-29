@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tmux Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    /* Catppuccin Mocha */
+    --base: #1e1e2e;
+    --mantle: #181825;
+    --crust: #11111b;
+    --surface0: #313244;
+    --surface1: #45475a;
+    --surface2: #585b70;
+    --overlay0: #6c7086;
+    --overlay1: #7f849c;
+    --text: #cdd6f4;
+    --subtext0: #a6adc8;
+    --subtext1: #bac2de;
+    --lavender: #b4befe;
+    --blue: #89b4fa;
+    --sapphire: #74c7ec;
+    --sky: #89dceb;
+    --teal: #94e2d5;
+    --green: #a6e3a1;
+    --yellow: #f9e2af;
+    --peach: #fab387;
+    --maroon: #eba0ac;
+    --red: #f38ba8;
+    --mauve: #cba6f7;
+    --pink: #f5c2e7;
+    --flamingo: #f2cdcd;
+    --rosewater: #f5e0dc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--base);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--surface0);
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--green), var(--teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+
+  .header p {
+    color: var(--overlay1);
+    font-size: 0.9rem;
+  }
+
+  .leader-badge {
+    display: inline-block;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--yellow);
+    margin: 0 0.15rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+    padding: 0.6rem 1rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-box:focus { border-color: var(--green); }
+  .search-box::placeholder { color: var(--overlay0); }
+
+  .filter-btn {
+    padding: 0.45rem 0.9rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 6px;
+    color: var(--subtext0);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover { background: var(--surface1); color: var(--text); }
+  .filter-btn.active {
+    background: var(--green);
+    color: var(--crust);
+    border-color: var(--green);
+    font-weight: 600;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .card:hover { border-color: var(--surface1); transform: translateY(-1px); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--surface0);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .card-icon { font-size: 1.1rem; width: 1.5rem; text-align: center; }
+  .card-body { padding: 0; }
+
+  /* Category colors — tuned for tmux workflow */
+  .cat-session .card-header { color: var(--mauve); border-left: 3px solid var(--mauve); }
+  .cat-window  .card-header { color: var(--blue); border-left: 3px solid var(--blue); }
+  .cat-pane    .card-header { color: var(--green); border-left: 3px solid var(--green); }
+  .cat-copy    .card-header { color: var(--yellow); border-left: 3px solid var(--yellow); }
+  .cat-nav     .card-header { color: var(--sky); border-left: 3px solid var(--sky); }
+  .cat-plugin  .card-header { color: var(--peach); border-left: 3px solid var(--peach); }
+  .cat-cli     .card-header { color: var(--teal); border-left: 3px solid var(--teal); }
+  .cat-misc    .card-header { color: var(--pink); border-left: 3px solid var(--pink); }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    padding: 0.4rem 1rem;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--surface0);
+    transition: background 0.15s;
+  }
+
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: rgba(166, 227, 161, 0.04); }
+  .row.highlight { background: rgba(249, 226, 175, 0.08); }
+
+  .key-col {
+    flex: 0 0 auto;
+    min-width: 160px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    align-items: center;
+  }
+
+  .desc-col {
+    flex: 1;
+    color: var(--subtext1);
+    font-size: 0.85rem;
+  }
+
+  kbd {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.15rem 0.45rem;
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 4px;
+    color: var(--lavender);
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  kbd.leader {
+    color: var(--yellow);
+    border-color: rgba(249, 226, 175, 0.3);
+    background: rgba(249, 226, 175, 0.08);
+  }
+
+  kbd.special {
+    color: var(--peach);
+    border-color: rgba(250, 179, 135, 0.3);
+    background: rgba(250, 179, 135, 0.06);
+  }
+
+  .key-plus { color: var(--overlay0); font-size: 0.7rem; margin: 0 0.1rem; }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 1rem;
+    border-bottom: 1px solid var(--surface0);
+  }
+
+  .separator span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--overlay0);
+  }
+
+  .tip {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    color: var(--overlay1);
+    font-style: italic;
+    border-top: 1px solid var(--surface0);
+    background: rgba(148, 226, 213, 0.03);
+  }
+
+  .tip::before { content: '💡 '; }
+
+  .hidden { display: none !important; }
+
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--overlay0);
+    font-size: 1rem;
+  }
+
+  @media print {
+    body { padding: 0.5rem; font-size: 11px; }
+    .controls { display: none; }
+    .grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .card { break-inside: avoid; border: 1px solid #444; }
+    .row { padding: 0.2rem 0.5rem; }
+    kbd { font-size: 0.65rem; padding: 0.1rem 0.3rem; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .key-col { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🪟 tmux Cheatsheet</h1>
+  <p>Catppuccin Mocha · prefix = <span class="leader-badge">Ctrl+Space</span> · vi-mode copy · TPM plugins · seamless nvim splits</p>
+</div>
+
+<div class="controls">
+  <input type="text" class="search-box" placeholder="Search keybindings…  (try: split, resize, copy, session, zoom)" id="search">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="session">🗂 Sessions</button>
+  <button class="filter-btn" data-cat="window">🪟 Windows</button>
+  <button class="filter-btn" data-cat="pane">▦ Panes</button>
+  <button class="filter-btn" data-cat="nav">🧭 Navigate</button>
+  <button class="filter-btn" data-cat="copy">📋 Copy</button>
+  <button class="filter-btn" data-cat="plugin">🔌 Plugins</button>
+  <button class="filter-btn" data-cat="cli">⌨ CLI</button>
+  <button class="filter-btn" data-cat="misc">⚙ Misc</button>
+</div>
+
+<div class="grid" id="grid">
+
+<!-- ═══════════════════ SESSIONS ═══════════════════ -->
+<div class="card cat-session" data-category="session">
+  <div class="card-header"><span class="card-icon">🗂</span> Sessions</div>
+  <div class="card-body">
+    <div class="separator"><span>Switch / Create</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>j</kbd></div><div class="desc-col"><strong>fzf session switcher</strong> popup</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>t</kbd></div><div class="desc-col"><strong>zoxide project opener</strong> — jump into a recent dir as a new session</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>s</kbd></div><div class="desc-col">Session/window tree picker (built-in)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>S</kbd></div><div class="desc-col">New session (prompts for name)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>$</kbd></div><div class="desc-col">Rename current session</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>(</kbd></div><div class="desc-col">Previous session</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>)</kbd></div><div class="desc-col">Next session</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>L</kbd></div><div class="desc-col">Last (most-recent) session</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>d</kbd></div><div class="desc-col"><strong>Detach</strong> from session (keeps running)</div></div>
+  </div>
+  <div class="tip">detach-on-destroy=off → killing a session jumps to another, never kicks you out of tmux</div>
+</div>
+
+<!-- ═══════════════════ WINDOWS ═══════════════════ -->
+<div class="card cat-window" data-category="window">
+  <div class="card-header"><span class="card-icon">🪟</span> Windows</div>
+  <div class="card-body">
+    <div class="separator"><span>Create / Close</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>c</kbd></div><div class="desc-col"><strong>New window</strong> (opens in current pane's directory)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>&amp;</kbd></div><div class="desc-col">Kill current window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>,</kbd></div><div class="desc-col">Rename window</div></div>
+    <div class="separator"><span>Switch</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>n</kbd></div><div class="desc-col">Next window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>p</kbd></div><div class="desc-col">Previous window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>1</kbd>…<kbd>9</kbd></div><div class="desc-col">Jump to window #</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>l</kbd></div><div class="desc-col">Last (most-recent) window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>w</kbd></div><div class="desc-col">Window picker (tree)</div></div>
+    <div class="separator"><span>Reorder</span></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>Shift</kbd><span class="key-plus">+</span><kbd>←</kbd></div><div class="desc-col"><strong>Move window left</strong> (no prefix needed)</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>Shift</kbd><span class="key-plus">+</span><kbd>→</kbd></div><div class="desc-col"><strong>Move window right</strong> (no prefix needed)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>.</kbd></div><div class="desc-col">Move window to a different index</div></div>
+  </div>
+  <div class="tip">Windows start at 1 and renumber automatically when one is closed</div>
+</div>
+
+<!-- ═══════════════════ PANES — CREATE ═══════════════════ -->
+<div class="card cat-pane" data-category="pane">
+  <div class="card-header"><span class="card-icon">▦</span> Panes — Create &amp; Close</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>|</kbd></div><div class="desc-col"><strong>Split horizontal</strong> (vertical bar) — opens in current dir</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>-</kbd></div><div class="desc-col"><strong>Split vertical</strong> — opens in current dir</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>x</kbd></div><div class="desc-col">Kill current pane (with confirm)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>!</kbd></div><div class="desc-col">Break pane into a new window</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>z</kbd></div><div class="desc-col"><strong>Zoom toggle</strong> (built-in)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>m</kbd></div><div class="desc-col"><strong>Maximize toggle</strong> (custom — repeatable)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>q</kbd></div><div class="desc-col">Show pane numbers (press # to jump)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Space</kbd></div><div class="desc-col">Cycle pane layouts</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>{</kbd> / <kbd>}</kbd></div><div class="desc-col">Swap pane with previous/next</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PANES — RESIZE ═══════════════════ -->
+<div class="card cat-pane" data-category="pane">
+  <div class="card-header"><span class="card-icon">↔</span> Panes — Resize</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>H</kbd></div><div class="desc-col">Resize left 5 (repeatable — keep tapping H)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>J</kbd></div><div class="desc-col">Resize down 5 (repeatable)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>K</kbd></div><div class="desc-col">Resize up 5 (repeatable)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>L</kbd></div><div class="desc-col">Resize right 5 (repeatable)</div></div>
+  </div>
+  <div class="tip">After prefix+H, you can keep pressing H/J/K/L without re-pressing prefix (-r flag)</div>
+</div>
+
+<!-- ═══════════════════ NAVIGATION ═══════════════════ -->
+<div class="card cat-nav" data-category="nav">
+  <div class="card-header"><span class="card-icon">🧭</span> Pane Navigation (smart-splits)</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>h</kbd></div><div class="desc-col"><strong>Move left</strong> — works across tmux ↔ nvim seamlessly</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>j</kbd></div><div class="desc-col"><strong>Move down</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>k</kbd></div><div class="desc-col"><strong>Move up</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>l</kbd></div><div class="desc-col"><strong>Move right</strong></div></div>
+    <div class="separator"><span>Built-in fallbacks</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>o</kbd></div><div class="desc-col">Cycle to next pane</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>;</kbd></div><div class="desc-col">Toggle to last pane</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>←</kbd>/<kbd>→</kbd></div><div class="desc-col">Move by arrow direction</div></div>
+  </div>
+  <div class="tip">No prefix needed for Ctrl+hjkl — same keys move between nvim splits and tmux panes</div>
+</div>
+
+<!-- ═══════════════════ COPY MODE ═══════════════════ -->
+<div class="card cat-copy" data-category="copy">
+  <div class="card-header"><span class="card-icon">📋</span> Copy Mode (vi)</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>[</kbd></div><div class="desc-col"><strong>Enter copy mode</strong> — scroll &amp; select</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>]</kbd></div><div class="desc-col">Paste from tmux buffer</div></div>
+    <div class="separator"><span>In Copy Mode</span></div>
+    <div class="row"><div class="key-col"><kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd></div><div class="desc-col">Move cursor (vi keys)</div></div>
+    <div class="row"><div class="key-col"><kbd>w</kbd> / <kbd>b</kbd></div><div class="desc-col">Word forward / back</div></div>
+    <div class="row"><div class="key-col"><kbd>g</kbd> / <kbd>G</kbd></div><div class="desc-col">Top / bottom of buffer</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>u</kbd> / <kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>d</kbd></div><div class="desc-col">Half page up / down</div></div>
+    <div class="row"><div class="key-col"><kbd>/</kbd> / <kbd>?</kbd></div><div class="desc-col">Search forward / backward</div></div>
+    <div class="row"><div class="key-col"><kbd>n</kbd> / <kbd>N</kbd></div><div class="desc-col">Next / previous search match</div></div>
+    <div class="row"><div class="key-col"><kbd>v</kbd></div><div class="desc-col"><strong>Begin selection</strong></div></div>
+    <div class="row"><div class="key-col"><kbd>V</kbd></div><div class="desc-col">Line selection</div></div>
+    <div class="row"><div class="key-col"><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>v</kbd></div><div class="desc-col">Block selection</div></div>
+    <div class="row"><div class="key-col"><kbd>y</kbd></div><div class="desc-col"><strong>Yank → pbcopy</strong> (system clipboard) and exit</div></div>
+    <div class="row"><div class="key-col"><kbd>q</kbd> / <kbd>Esc</kbd></div><div class="desc-col">Exit copy mode</div></div>
+  </div>
+  <div class="tip">Mouse drag also selects + copies. OSC52 propagates clipboard through SSH.</div>
+</div>
+
+<!-- ═══════════════════ QUICK COPY (PLUGINS) ═══════════════════ -->
+<div class="card cat-copy" data-category="copy">
+  <div class="card-header"><span class="card-icon">⚡</span> Quick Copy (plugins)</div>
+  <div class="card-body">
+    <div class="separator"><span>tmux-thumbs (hint-based)</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>F</kbd></div><div class="desc-col"><strong>Highlight matches</strong> — paths, hashes, URLs, IPs. Press the hint letters to copy.</div></div>
+    <div class="separator"><span>extrakto (fuzzy)</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>e</kbd></div><div class="desc-col"><strong>Fuzzy-pick</strong> any word/path/URL from the current pane</div></div>
+    <div class="row"><div class="key-col">↳ <kbd>Tab</kbd></div><div class="desc-col">Toggle filter mode (word / line / path / url)</div></div>
+    <div class="row"><div class="key-col">↳ <kbd>Enter</kbd></div><div class="desc-col">Insert into current command line</div></div>
+    <div class="row"><div class="key-col">↳ <kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>y</kbd></div><div class="desc-col">Copy to system clipboard</div></div>
+    <div class="row"><div class="key-col">↳ <kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>e</kbd></div><div class="desc-col">Open in $EDITOR</div></div>
+  </div>
+  <div class="tip">Thumbs = fastest for visible single token. Extrakto = best for searching scrollback.</div>
+</div>
+
+<!-- ═══════════════════ PLUGINS ═══════════════════ -->
+<div class="card cat-plugin" data-category="plugin">
+  <div class="card-header"><span class="card-icon">🔌</span> TPM &amp; Resurrect</div>
+  <div class="card-body">
+    <div class="separator"><span>Plugin Manager (TPM)</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>I</kbd></div><div class="desc-col"><strong>Install plugins</strong> from <code>~/.config/tmux/tmux.conf</code></div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>U</kbd></div><div class="desc-col">Update plugins</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Alt</kbd><span class="key-plus">+</span><kbd>u</kbd></div><div class="desc-col">Uninstall plugins removed from config</div></div>
+    <div class="separator"><span>Resurrect / Continuum</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>s</kbd></div><div class="desc-col"><strong>Save</strong> all sessions/windows/panes (incl. nvim sessions)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>r</kbd></div><div class="desc-col"><strong>Restore</strong> last saved state</div></div>
+  </div>
+  <div class="tip">continuum auto-saves every 15 min and auto-restores at tmux start</div>
+</div>
+
+<!-- ═══════════════════ CLI / OUTSIDE TMUX ═══════════════════ -->
+<div class="card cat-cli" data-category="cli">
+  <div class="card-header"><span class="card-icon">⌨</span> Shell Commands</div>
+  <div class="card-body">
+    <div class="separator"><span>Sessions</span></div>
+    <div class="row"><div class="key-col"><kbd>tmux</kbd></div><div class="desc-col">Start new session (auto-launched by WezTerm)</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux ls</kbd></div><div class="desc-col">List running sessions</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux a</kbd></div><div class="desc-col"><strong>Attach</strong> to last session</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux a -t name</kbd></div><div class="desc-col">Attach to named session</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux new -s name</kbd></div><div class="desc-col">New named session</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux kill-session -t name</kbd></div><div class="desc-col">Kill named session</div></div>
+    <div class="row"><div class="key-col"><kbd>tmux kill-server</kbd></div><div class="desc-col">Kill all sessions (full restart)</div></div>
+    <div class="separator"><span>Inside tmux</span></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>:</kbd></div><div class="desc-col">tmux command prompt (e.g. <code>:set-window-option …</code>)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>?</kbd></div><div class="desc-col">List all keybindings</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MISC ═══════════════════ -->
+<div class="card cat-misc" data-category="misc">
+  <div class="card-header"><span class="card-icon">⚙</span> Misc &amp; Config</div>
+  <div class="card-body">
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>y</kbd></div><div class="desc-col"><strong>Toggle sync-panes</strong> — type in one pane, runs in all</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>r</kbd></div><div class="desc-col"><strong>Reload</strong> tmux.conf</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>Ctrl</kbd><span class="key-plus">+</span><kbd>Space</kbd></div><div class="desc-col">Send literal <kbd>Ctrl+Space</kbd> to app (double-tap prefix)</div></div>
+    <div class="row"><div class="key-col"><kbd class="leader">prefix</kbd><kbd>t</kbd></div><div class="desc-col">Show big clock in pane</div></div>
+    <div class="separator"><span>Settings in your config</span></div>
+    <div class="row"><div class="key-col"><kbd>mouse</kbd></div><div class="desc-col">Enabled — drag to resize, scroll to enter copy mode</div></div>
+    <div class="row"><div class="key-col"><kbd>monitor-activity</kbd></div><div class="desc-col">Highlight windows with new output (no bell/flash)</div></div>
+    <div class="row"><div class="key-col"><kbd>automatic-rename</kbd></div><div class="desc-col">Windows named after current directory</div></div>
+    <div class="row"><div class="key-col"><kbd>history-limit</kbd></div><div class="desc-col">50 000 lines per pane</div></div>
+    <div class="row"><div class="key-col"><kbd>escape-time</kbd></div><div class="desc-col">0 ms — instant <kbd>Esc</kbd> in nvim</div></div>
+    <div class="row"><div class="key-col"><kbd>focus-events</kbd></div><div class="desc-col">On — nvim autoread works</div></div>
+    <div class="row"><div class="key-col"><kbd>aggressive-resize</kbd></div><div class="desc-col">Resize to active client only</div></div>
+    <div class="row"><div class="key-col"><kbd>set-clipboard</kbd></div><div class="desc-col">OSC52 — copy works through SSH</div></div>
+  </div>
+  <div class="tip">Edit ~/.config/tmux/tmux.conf and prefix+r to apply without restarting</div>
+</div>
+
+</div><!-- /grid -->
+
+<div class="no-results hidden" id="no-results">No keybindings match your search.</div>
+
+<script>
+const searchInput = document.getElementById('search');
+const grid = document.getElementById('grid');
+const cards = grid.querySelectorAll('.card');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const noResults = document.getElementById('no-results');
+
+let activeCategory = 'all';
+
+function applyFilters() {
+  const query = searchInput.value.toLowerCase().trim();
+  let visible = 0;
+
+  cards.forEach(card => {
+    const catMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
+
+    if (!catMatch) {
+      card.classList.add('hidden');
+      return;
+    }
+
+    if (!query) {
+      card.classList.remove('hidden');
+      visible++;
+      card.querySelectorAll('.row').forEach(r => r.classList.remove('highlight'));
+      return;
+    }
+
+    const rows = card.querySelectorAll('.row');
+    let cardHasMatch = false;
+
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      if (text.includes(query)) {
+        row.classList.add('highlight');
+        cardHasMatch = true;
+      } else {
+        row.classList.remove('highlight');
+      }
+    });
+
+    const headerText = card.querySelector('.card-header').textContent.toLowerCase();
+    if (headerText.includes(query)) cardHasMatch = true;
+
+    if (cardHasMatch) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  noResults.classList.toggle('hidden', visible > 0);
+}
+
+searchInput.addEventListener('input', applyFilters);
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = btn.dataset.cat;
+    applyFilters();
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    searchInput.blur();
+    applyFilters();
+  }
+});
+</script>
+
+</body>
+</html>

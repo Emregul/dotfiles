@@ -52,6 +52,9 @@ if status is-interactive
     abbr -a czd 'chezmoi diff'
     abbr -a cze 'chezmoi edit'
 
+    # tmuxinator (mux = conventional short alias)
+    abbr -a mux 'tmuxinator'
+
     # Quick edits
     abbr -a fishrc  '$EDITOR ~/.config/fish/config.fish'
     abbr -a tmuxrc  '$EDITOR ~/.config/tmux/tmux.conf'

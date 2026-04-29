@@ -1,0 +1,19 @@
+# tmuxinator project for the chezmoi dotfiles repo.
+# Launch with: `mux dotfiles` (or `tmuxinator start dotfiles`)
+name: dotfiles
+root: ~/.local/share/chezmoi
+
+# Preview pending chezmoi changes when the session starts
+on_project_start: chezmoi diff | head -40 || true
+
+windows:
+  - edit:
+      layout: main-vertical
+      panes:
+        - nvim .
+        - git status
+  - chezmoi:
+      panes:
+        - chezmoi status
+        - chezmoi diff
+  - shell: fish
